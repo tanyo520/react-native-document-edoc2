@@ -13,6 +13,7 @@ import android.webkit.MimeTypeMap;
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -90,7 +91,6 @@ public class DocumentPicker extends ReactContextBaseJavaModule implements Activi
                                 return true;
                             }
                         }
-
                         try {
                             callback.call();
                         } catch (Exception e) {
@@ -100,7 +100,6 @@ public class DocumentPicker extends ReactContextBaseJavaModule implements Activi
                             }
                         }
                     }
-
                     return true;
                 }
             });
@@ -118,9 +117,11 @@ public class DocumentPicker extends ReactContextBaseJavaModule implements Activi
     @ReactMethod
     public void show(final ReadableMap args, final Callback callback) {
         final Activity activity = getCurrentActivity();
+        final DocumentPicker documentPicker=this;
         permissionsCheck(activity, null, Collections.singletonList(Manifest.permission.WRITE_EXTERNAL_STORAGE), new Callable<Void>() {
-            String mArgs=args;
+            ReadableMap mArgs=args;
             Callback mCallback=callback;
+
             @Override
             public Void call() {
                 Intent intent;
@@ -130,14 +131,14 @@ public class DocumentPicker extends ReactContextBaseJavaModule implements Activi
                     intent = new Intent(Intent.ACTION_PICK);
                 }
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-        
+
                 if (!args.isNull("filetype")) {
                     ReadableArray filetypes = args.getArray("filetype");
                     if (filetypes.size() > 0) {
                         intent.setType(filetypes.getString(0));
                     }
                 }
-                this.callback = callback;
+                documentPicker.callback = callback;
                 getReactApplicationContext().startActivityForResult(intent, READ_REQUEST_CODE, Bundle.EMPTY);
                 return null;
             }
